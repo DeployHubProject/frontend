@@ -19,6 +19,7 @@ jobs:
     uses: DeployHubProject/workflow-toolkit/.github/workflows/helm-release-workflow.yml@53e6afe177e5ca1d69cedbbc281546839fd2ab66
     with:
       gh_repository_owner: ${{ github.repository_owner }}
+      gh_event_name: ${{ github.event_name }}
       gh_head_ref: ${{ github.head_ref }}
       gh_ref_name: ${{ github.ref_name }}
       gh_event_repo_name: ${{ github.event.repository.name }}
