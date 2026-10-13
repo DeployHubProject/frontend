@@ -19,6 +19,7 @@ jobs:
     uses: DeployHubProject/workflow-toolkit/.github/workflows/env-config-workflow.yml@e197e3715d49e263f913872fd404100c219725d9
     with:
       gh_repository_owner: ${{ github.repository_owner }}
+      gh_event_name: ${{ github.event_name }}
       gh_head_ref: ${{ github.head_ref }}
       gh_ref_name: ${{ github.ref_name }}
       gh_event_repo_name: ${{ github.event.repository.name }}
