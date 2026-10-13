@@ -18,6 +18,7 @@ jobs:
   setenv:
     uses: DeployHubProject/workflow-toolkit/.github/workflows/helm-release-workflow.yml@53e6afe177e5ca1d69cedbbc281546839fd2ab66
     with:
+      gh_repository_owner: ${{ github.repository_owner }}
       gh_head_ref: ${{ github.head_ref }}
       gh_ref_name: ${{ github.ref_name }}
       gh_event_repo_name: ${{ github.event.repository.name }}
@@ -26,7 +27,7 @@ jobs:
       gh_run_number: ${{ github.run_number }}
 
   release:
-    uses: ortelius/workflow-toolkit/.github/workflows/container-release-workflow.yml@467223eadd0705313fa26090dd52f8b6b3d335bf
+    uses: DeployHubProject/workflow-toolkit/.github/workflows/container-release-workflow.yml@53e6afe177e5ca1d69cedbbc281546839fd2ab66
     needs: setenv
     with:
       gh_repository_owner: ${{ github.repository_owner }}
@@ -44,7 +45,7 @@ jobs:
     permissions:
       security-events: write
       statuses: write
-    uses: ortelius/workflow-toolkit/.github/workflows/trivy-scan-workflow.yml@467223eadd0705313fa26090dd52f8b6b3d335bf
+    uses: DeployHubProject/workflow-toolkit/.github/workflows/trivy-scan-workflow.yml@53e6afe177e5ca1d69cedbbc281546839fd2ab66
     needs:
       - setenv
       - release
@@ -55,7 +56,7 @@ jobs:
       image_repo_tag: ${{ needs.setenv.outputs.image_repo_tag }}
 
   helm:
-    uses: ortelius/workflow-toolkit/.github/workflows/helm-release-workflow.yml@467223eadd0705313fa26090dd52f8b6b3d335bf
+    uses: DeployHubProject/workflow-toolkit/.github/workflows/helm-release-workflow.yml@53e6afe177e5ca1d69cedbbc281546839fd2ab66
     needs:
       - setenv
       - release
