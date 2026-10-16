@@ -17,7 +17,7 @@ jobs:
       with:
         ref:  main
         fetch-depth: 0
-        
+
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
@@ -33,6 +33,7 @@ jobs:
         upstream_sync_repo: ortelius/frontend
         upstream_repo_access_token: ${{ secrets.GITHUB_TOKEN }}
         git_config_pull_rebase: true
+        target_branch_push_args: '--force-with-lease'
 
         # Set test_mode true during manual dispatch to run tests instead of the true action!!
         test_mode: ${{ inputs.sync_test_mode }}
