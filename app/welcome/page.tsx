@@ -34,12 +34,17 @@ interface GitHubAppRepo {
 
 // Per-repo mapping collected before import:
 //  - runtimeEndpoint: name of the runtime endpoint this GitOps repo is deployed to
-//    (e.g. us-central-1_deployhub); leave empty for repos that are not GitOps repos
+//    (e.g. dh-prod); this is the only value the user edits. Empty = not a GitOps repo.
+//  - endpointNamespace: not shown in the UI. Kept from the saved mapping so the API
+//    still receives <endpoint name>/<namespace>; falls back to DEFAULT_ENDPOINT_NAMESPACE.
 interface RepoMapping {
   runtimeEndpoint: string
+  endpointNamespace: string
 }
 
-const emptyMapping: RepoMapping = { runtimeEndpoint: '' }
+const DEFAULT_ENDPOINT_NAMESPACE = 'default'
+
+const emptyMapping: RepoMapping = { runtimeEndpoint: '', endpointNamespace: '' }
 
 export default function WelcomePage() {
   const router = useRouter()
@@ -116,8 +121,11 @@ export default function WelcomePage() {
         const saved: Record<string, RepoMapping> = {}
         repos.forEach((r: GitHubAppRepo) => {
           if (!r.mapping) return
+          const ep = r.mapping.gitopsEndpoint || ''
+          const slash = ep.lastIndexOf('/')
           saved[r.full_name] = {
-            runtimeEndpoint: r.mapping.gitopsEndpoint || '',
+            runtimeEndpoint: slash > 0 ? ep.slice(0, slash) : ep,
+            endpointNamespace: slash > 0 ? ep.slice(slash + 1) : '',
           }
         })
         setRepoMappings(saved)
@@ -195,9 +203,13 @@ export default function WelcomePage() {
   }
 
   // Normalizes a mapping into what the API stores (empty string = not set).
-  const mappingPayload = (m: RepoMapping) => ({
-    gitopsEndpoint: m.runtimeEndpoint.trim(),
-  })
+  // The API stores gitopsEndpoint as <endpoint name>/<namespace>.
+  const mappingPayload = (m: RepoMapping) => {
+    const name = m.runtimeEndpoint.trim()
+    return {
+      gitopsEndpoint: name ? `${name}/${m.endpointNamespace.trim() || DEFAULT_ENDPOINT_NAMESPACE}` : '',
+    }
+  }
 
   // Imported repos whose mapping was edited but not saved yet.
   const dirtyImported = githubRepos
@@ -205,8 +217,8 @@ export default function WelcomePage() {
     .filter(fullName => importedRepos.has(fullName))
     .filter(
       fullName =>
-        JSON.stringify(mappingPayload(getMapping(fullName))) !==
-        JSON.stringify(mappingPayload(savedMappings[fullName] || emptyMapping))
+        getMapping(fullName).runtimeEndpoint.trim() !==
+        (savedMappings[fullName] || emptyMapping).runtimeEndpoint.trim()
     )
   const hasPending = selectedRepos.size > 0 || dirtyImported.length > 0
 
