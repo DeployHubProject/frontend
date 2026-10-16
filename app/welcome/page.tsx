@@ -29,21 +29,22 @@ interface GitHubAppRepo {
   // true when the repo is on the user's scan allow-list (already onboarded)
   scanned?: boolean
   // saved mapping for the repo (shown/edited after import)
-  mapping?: { artifactNamespace?: string; gitopsEndpoint?: string }
+  mapping?: { gitopsEndpoint?: string }
 }
 
 // Per-repo mapping collected before import:
-//  - artifactNamespace: GitHub org -> artifact/docker namespace (e.g. DeployHubProj -> deployhub)
-//  - isGitops + endpointName/endpointNamespace: repo -> runtime endpoint mapping
-//    (e.g. us-central-1_deployhub/deployhub) for repos that hold gitops manifests/charts
+//  - runtimeEndpoint: name of the runtime endpoint this GitOps repo is deployed to
+//    (e.g. dh-prod); this is the only value the user edits. Empty = not a GitOps repo.
+//  - endpointNamespace: not shown in the UI. Kept from the saved mapping so the API
+//    still receives <endpoint name>/<namespace>; falls back to DEFAULT_ENDPOINT_NAMESPACE.
 interface RepoMapping {
-  artifactNamespace: string
-  isGitops: boolean
-  endpointName: string
+  runtimeEndpoint: string
   endpointNamespace: string
 }
 
-const emptyMapping: RepoMapping = { artifactNamespace: '', isGitops: false, endpointName: '', endpointNamespace: '' }
+const DEFAULT_ENDPOINT_NAMESPACE = 'default'
+
+const emptyMapping: RepoMapping = { runtimeEndpoint: '', endpointNamespace: '' }
 
 export default function WelcomePage() {
   const router = useRouter()
@@ -123,9 +124,7 @@ export default function WelcomePage() {
           const ep = r.mapping.gitopsEndpoint || ''
           const slash = ep.lastIndexOf('/')
           saved[r.full_name] = {
-            artifactNamespace: r.mapping.artifactNamespace || '',
-            isGitops: ep !== '',
-            endpointName: slash > 0 ? ep.slice(0, slash) : ep,
+            runtimeEndpoint: slash > 0 ? ep.slice(0, slash) : ep,
             endpointNamespace: slash > 0 ? ep.slice(slash + 1) : '',
           }
         })
@@ -204,13 +203,13 @@ export default function WelcomePage() {
   }
 
   // Normalizes a mapping into what the API stores (empty string = not set).
-  const mappingPayload = (m: RepoMapping) => ({
-    artifactNamespace: m.artifactNamespace.trim(),
-    gitopsEndpoint:
-      m.isGitops && m.endpointName.trim() && m.endpointNamespace.trim()
-        ? `${m.endpointName.trim()}/${m.endpointNamespace.trim()}`
-        : '',
-  })
+  // The API stores gitopsEndpoint as <endpoint name>/<namespace>.
+  const mappingPayload = (m: RepoMapping) => {
+    const name = m.runtimeEndpoint.trim()
+    return {
+      gitopsEndpoint: name ? `${name}/${m.endpointNamespace.trim() || DEFAULT_ENDPOINT_NAMESPACE}` : '',
+    }
+  }
 
   // Imported repos whose mapping was edited but not saved yet.
   const dirtyImported = githubRepos
@@ -218,8 +217,8 @@ export default function WelcomePage() {
     .filter(fullName => importedRepos.has(fullName))
     .filter(
       fullName =>
-        JSON.stringify(mappingPayload(getMapping(fullName))) !==
-        JSON.stringify(mappingPayload(savedMappings[fullName] || emptyMapping))
+        getMapping(fullName).runtimeEndpoint.trim() !==
+        (savedMappings[fullName] || emptyMapping).runtimeEndpoint.trim()
     )
   const hasPending = selectedRepos.size > 0 || dirtyImported.length > 0
 
@@ -240,13 +239,12 @@ export default function WelcomePage() {
         const toImport = Array.from(selectedRepos)
         // Only send a mapping entry for repos where the user actually filled
         // something in — an untouched repo just imports with no mapping.
-        const mappings: Record<string, { artifactNamespace: string | null; gitopsEndpoint: string | null }> = {}
+        const mappings: Record<string, { gitopsEndpoint: string | null }> = {}
         toImport.forEach(fullName => {
           const pl = mappingPayload(getMapping(fullName))
-          if (pl.artifactNamespace || pl.gitopsEndpoint) {
+          if (pl.gitopsEndpoint) {
             mappings[fullName] = {
-              artifactNamespace: pl.artifactNamespace || null,
-              gitopsEndpoint: pl.gitopsEndpoint || null,
+              gitopsEndpoint: pl.gitopsEndpoint,
             }
           }
         })
@@ -548,7 +546,6 @@ export default function WelcomePage() {
                   const alreadyImported = importedRepos.has(repo.full_name)
                   const isExpanded = expandedRepos.has(repo.full_name)
                   const mapping = getMapping(repo.full_name)
-                  const orgName = repo.full_name.split('/')[0]
                   return (
                     <div
                       key={repo.id}
@@ -629,56 +626,16 @@ export default function WelcomePage() {
                         <div className={`px-3 pb-3 pt-2 ml-6 space-y-3 border-t ${isDark ? 'border-[#21262d]' : 'border-gray-100'}`}>
                           <div>
                             <label className={`block text-xs font-semibold mb-1 ${textClass}`}>
-                              Artifact namespace
+                              Add runtime endpoint that this GitOps repo is deployed to
                             </label>
-                            <p className={`text-xs mb-1.5 ${mutedClass}`}>
-                              Map the <code>{orgName}</code> GitHub org to the Docker/artifact namespace it publishes under.
-                            </p>
                             <input
                               type="text"
-                              value={mapping.artifactNamespace}
-                              onChange={e => updateMapping(repo.full_name, { artifactNamespace: e.target.value })}
-                              placeholder="e.g. deployhub"
+                              value={mapping.runtimeEndpoint}
+                              onChange={e => updateMapping(repo.full_name, { runtimeEndpoint: e.target.value })}
+                              placeholder="e.g. dh-prod"
                               style={inputStyle}
                               className="w-full text-sm px-2.5 py-1.5 rounded-md border outline-none"
                             />
-                          </div>
-
-                          <div>
-                            <label className={`flex items-center gap-2 text-xs font-semibold cursor-pointer ${textClass}`}>
-                              <input
-                                type="checkbox"
-                                checked={mapping.isGitops}
-                                onChange={e => updateMapping(repo.full_name, { isGitops: e.target.checked })}
-                              />
-                              This is a GitOps repo (Helm charts / manifests)
-                            </label>
-                            {mapping.isGitops && (
-                              <>
-                                <p className={`text-xs mt-1 mb-1.5 ${mutedClass}`}>
-                                  Map it to the runtime endpoint it deploys to, as <code>&lt;endpoint name&gt;/&lt;namespace&gt;</code>.
-                                </p>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    value={mapping.endpointName}
-                                    onChange={e => updateMapping(repo.full_name, { endpointName: e.target.value })}
-                                    placeholder="e.g. us-central-1_deployhub"
-                                    style={inputStyle}
-                                    className="flex-1 min-w-0 text-sm px-2.5 py-1.5 rounded-md border outline-none"
-                                  />
-                                  <span className={mutedClass}>/</span>
-                                  <input
-                                    type="text"
-                                    value={mapping.endpointNamespace}
-                                    onChange={e => updateMapping(repo.full_name, { endpointNamespace: e.target.value })}
-                                    placeholder="e.g. deployhub"
-                                    style={inputStyle}
-                                    className="flex-1 min-w-0 text-sm px-2.5 py-1.5 rounded-md border outline-none"
-                                  />
-                                </div>
-                              </>
-                            )}
                           </div>
 
                           {alreadyImported && (
