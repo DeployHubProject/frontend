@@ -1,31 +1,19 @@
-name: Sync Upstream
+name: Sync Fork
 
 on:
   schedule:
-    # Runs every 30 minutes
-    - cron: '*/30 * * * *'
-  # Allows you to manually trigger the workflow from the Actions tab
-  workflow_dispatch: 
+    - cron: '*/30 * * * *' # every 30 minutes
+  workflow_dispatch: # on button click
 
 jobs:
   sync:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout target branch
-        uses: actions/checkout@v4
-        with:
-          # Set this to the branch you want to sync (e.g., main or master)
-          ref: main 
-          persist-credentials: false
 
-      - name: Sync upstream changes
-        uses: repo-sync/github-sync@v2
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: tgymnich/fork-sync@v1.8
         with:
-          # Format: owner/repository
-          upstream_repository: "ortelius/frontend"
-          # The upstream branch you want to sync from
-          target_repository_branch: "main"
-          # The local branch you want to sync to
-          target_branch: "main"
-          # GitHub automatically provides this token
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          owner: ortelius
+          base: main
+          head: main
+          merge_method: rebase
