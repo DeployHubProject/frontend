@@ -15,7 +15,7 @@
     "@mui/icons-material": "^7.3.9",
     "@mui/material": "^7.3.9",
     "dom-to-image": "^2.6.0",
-    "next": "16.2.1",
+    "next": "^16.4.1",
     "pdfkit": "^0.19.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -51,5 +51,8 @@
     "Firefox >= 92",
     "Safari >= 15.4",
     "Edge >= 93"
-  ]
+  ],
+  "allowScripts": {
+    "unrs-resolver@1.11.1": true
+  }
 }
