@@ -1,5 +1,4 @@
-FROM public.ecr.aws/amazonlinux/amazonlinux:2023.10.20260120.4@sha256:50a58a006d3381e38160fc5bb4bbefa68b74fcd70dde798f68667aac24312f20
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+FROM public.ecr.aws/amazonlinux/amazonlinux:2027.0.20261026.1
 EXPOSE 8080
 
 WORKDIR /usr/src/app
