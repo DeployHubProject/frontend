@@ -41,8 +41,5 @@
     "Firefox >= 92",
     "Safari >= 15.4",
     "Edge >= 93"
-  ],
-  "allowScripts": {
-    "unrs-resolver@1.11.1": true
-  }
+  ]
 }
