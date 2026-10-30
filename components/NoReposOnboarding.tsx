@@ -17,7 +17,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import { useTheme } from '@/context/ThemeContext'
 import GitHubIcon from '@mui/icons-material/GitHub'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlined'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 
 interface Props {

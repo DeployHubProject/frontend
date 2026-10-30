@@ -20,7 +20,7 @@ import { useTheme } from '@/context/ThemeContext'
 import GroupIcon from '@mui/icons-material/Group'
 import PersonAddIcon from '@mui/icons-material/PersonAdd'
 import DeleteIcon from '@mui/icons-material/Delete'
-import MailOutlineIcon from '@mui/icons-material/MailOutline'
+import MailOutlineIcon from '@mui/icons-material/MailOutlined'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty'
 

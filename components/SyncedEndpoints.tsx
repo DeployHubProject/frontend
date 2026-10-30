@@ -7,7 +7,7 @@ import { getRelativeTime } from '@/lib/dataTransform'
 
 // --- Material UI Icon Imports ---
 import CloseIcon from '@mui/icons-material/Close'
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlined'
 import Inventory2Icon from '@mui/icons-material/Inventory2' // Used for empty state
 
 interface EndpointsModalProps {

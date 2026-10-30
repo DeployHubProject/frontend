@@ -15,7 +15,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import AddIcon from '@mui/icons-material/Add'
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined'
 import { setAllOrgVisibilityChecked } from '@/lib/Orgvisibilityfilter'
 import { addPendingOrgImports } from '@/lib/pendingImports'
 
