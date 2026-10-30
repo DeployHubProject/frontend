@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   frontend:
   - apiVersion: v2
+    appVersion: 12.0.27
+    created: "2026-10-30T18:09:45.884069497Z"
+    description: Frontend microservice
+    digest: 9e4e18b087fd0232ae2d36f5b6eeb5161a06e59e8402095b16f41e038be5bc23
+    icon: https://ortelius.github.io/parent-charts/ortelius.svg
+    name: frontend
+    type: application
+    urls:
+    - https://github.com/DeployHubProject/frontend/releases/download/v12.0.27/frontend-12.0.27.tgz
+    version: 12.0.27
+  - apiVersion: v2
     appVersion: 12.0.26
     created: "2026-10-30T15:50:52.796722295Z"
     description: Frontend microservice
@@ -166,4 +177,4 @@ entries:
     urls:
     - https://github.com/DeployHubProject/frontend/releases/download/v12.0.8/frontend-12.0.8.tgz
     version: 12.0.8
-generated: "2026-10-30T15:50:52.79627634Z"
+generated: "2026-10-30T18:09:45.883668785Z"
